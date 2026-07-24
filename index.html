@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Paradas - Eletra Energy</title>
+    <style>
+        :root { --bg-fundo: #f0f4f8; --bg-card: #ffffff; --cor-azul: #00a8cc; --cor-verde: #9bc53d; --cor-vermelho: #e74c3c; --cor-amarelo: #ca7b05; --cor-cinza: #7f8c8d; --cor-roxo: #8e44ad; --cor-texto: #2c3e50; --border-cor: #dcdde1; --tabela-alt: #f9f9f9; }
+        [data-tema="escuro"] { --bg-fundo: #1e272e; --bg-card: #2f3542; --cor-azul: #008cb0; --cor-texto: #f1f2f6; --border-cor: #57606f; --tabela-alt: #3e4452; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        body { background-color: var(--bg-fundo); color: var(--cor-texto); min-height: 100vh; }
+        header { background-color: var(--cor-azul); width: 100%; height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        header h1 { color: #ffffff; font-size: 16pt; }
+        .header-botoes { display: flex; gap: 15px; align-items: center; }
+        button { border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; padding: 10px 15px; }
+        button:hover { opacity: 0.8; }
+        button:disabled { background-color: var(--cor-cinza) !important; cursor: not-allowed; }
+        .btn-icone { background: transparent; font-size: 18pt; width: 40px; height: 40px; padding:0; border-radius: 50%; }
+        .btn-icone:hover { background-color: rgba(255, 255, 255, 0.2); }
+        .btn-verde { background-color: var(--cor-verde); color: white; }
+        .btn-azul { background-color: var(--cor-azul); color: white; }
+        .btn-vermelho { background-color: var(--cor-vermelho); color: white; }
+        .btn-amarelo { background-color: var(--cor-amarelo); color: white; }
+        .btn-roxo { background-color: var(--cor-roxo); color: white; }
+        .btn-cinza { background-color: var(--cor-cinza); color: white; }
+        .container { display: none; max-width: 1100px; margin: 20px auto; padding: 0 20px; }
+        .container.ativa { display: block; }
+        .card { background-color: var(--bg-card); border-radius: 15px; border: 1px solid var(--border-cor); padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        label { font-size: 10pt; font-weight: bold; margin-bottom: 5px; display: block; }
+        input, select { width: 100%; border: 1px solid var(--cor-azul); border-radius: 8px; padding: 8px; background-color: var(--bg-card); color: var(--cor-texto); font-size: 10pt; outline: none; margin-bottom: 15px; }
+        input:focus, select:focus { box-shadow: 0 0 5px rgba(0, 168, 204, 0.5); }
+        .grid-form { display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px; }
+        .col-2 { grid-column: span 2; } .col-3 { grid-column: span 3; } .col-6 { grid-column: span 6; }
+        #tela-login .card { max-width: 400px; margin: 50px auto; text-align: center; }
+        .top-bar { display: flex; gap: 10px; margin-bottom: 15px; }
+        .filtros-bar { display: flex; gap: 15px; align-items: center; margin-bottom: 20px; }
+        .filtros-bar select { margin-bottom: 0; width: 150px; }
+        .tabela-container { width: 100%; max-height: 400px; overflow: auto; border: 1px solid var(--border-cor); border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 9.5pt; white-space: nowrap; }
+        th { background-color: var(--cor-azul); color: white; padding: 12px; position: sticky; top: 0; z-index: 10;}
+        td { padding: 8px 12px; border-bottom: 1px solid var(--border-cor); cursor: pointer; }
+        tr:nth-child(even) { background-color: var(--tabela-alt); }
+        tr:hover { background-color: rgba(155, 197, 61, 0.2); }
+        .rodape-status { display: flex; justify-content: space-between; padding: 15px; background-color: var(--bg-card); border: 1px solid var(--border-cor); border-radius: 8px; margin-top: 15px; font-weight: bold; }
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+        .modal.ativa { display: flex; }
+        .modal-content { width: 100%; max-width: 950px; position: relative; }
+        .modal-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        .autocomplete { position: relative; }
+        .autocomplete-items { position: absolute; border: 1px solid var(--border-cor); background-color: var(--bg-card); z-index: 99; top: 100%; left: 0; right: 0; max-height: 200px; overflow-y: auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .autocomplete-items div { padding: 10px; cursor: pointer; border-bottom: 1px solid var(--border-cor); }
+        .autocomplete-items div:hover { background-color: var(--cor-azul); color: white; }
+        
+        /* Lista de Produtos do Admin */
+        .item-produto { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--border-cor); align-items: center; }
+        .item-produto button { padding: 5px 10px; font-size: 9pt; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 id="titulo-header">🏭 Lançamento de Paradas</h1>
+        <div class="header-botoes">
+            <button class="btn-icone" id="btnTema" onclick="alternarTema()">🌙</button>
+            <button class="btn-vermelho" id="btnSair" onclick="logout()" style="display: none;">🔒 Logout</button>
+        </div>
+    </header>
+
+    <div id="tela-login" class="container ativa">
+        <div class="card">
+            <h2 style="color: var(--cor-azul); margin-bottom: 20px;">Acesso ao Sistema</h2>
+            <label>Usuário:</label><input type="text" id="loginUser">
+            <label>Senha:</label><input type="password" id="loginSenha" onkeypress="if(event.key === 'Enter') fazerLogin()">
+            <button class="btn-verde" style="width: 100%; padding: 12px; font-size:12pt;" onclick="fazerLogin()">Entrar</button>
+        </div>
+    </div>
+
+    <div id="tela-operador" class="container">
+        <div class="card">
+            <form onsubmit="salvarOperador(event)" autocomplete="off">
+                <div class="grid-form">
+                    <div class="col-2"><label>Responsável:</label><input type="text" id="op_resp" required></div>
+                    <div class="col-2"><label>Data:</label><input type="date" id="op_data" required></div>
+                    <div class="col-2"><label>Turno:</label><select id="op_turno"><option>Manhã</option><option>Tarde</option><option>Noite</option></select></div>
+                    <div class="col-2"><label>Linha:</label><select id="op_linha" onchange="attMaq('op')"><option>Linha 1</option><option>Linha 2</option><option>Linha 3</option><option>Linha 4</option></select></div>
+                    <div class="col-2"><label>Máquina:</label><select id="op_maq"></select></div>
+                    <div class="col-2 autocomplete"><label>Produto (TDS):</label><input type="text" id="op_prod" placeholder="A carregar..."><div id="list-op_prod" class="autocomplete-items"></div></div>
+                    <div class="col-2"><label>Hora Início:</label><input type="text" id="op_ini" placeholder="00:00" required></div>
+                    <div class="col-2"><label>Hora Fim:</label><input type="text" id="op_fim" placeholder="00:00" required></div>
+                    <div class="col-2"><label>Qtd Paradas:</label><input type="number" id="op_qtd" value="1"></div>
+                    <div class="col-6"><label>Motivo:</label><input type="text" id="op_motivo" required></div>
+                    <div class="col-6" style="display:flex; justify-content:center;"><button type="submit" class="btn-verde" id="btnSalvarOp" style="padding:15px 50px; font-size: 14pt;">+ Salvar Registro (Enter)</button></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="tela-admin" class="container">
+        <div class="top-bar">
+            <button class="btn-verde" onclick="abrirModal(null)">+ Novo Cadastro</button>
+            <button class="btn-azul" onclick="exportarExcel()">📊 Exportar Excel</button>
+            <button class="btn-roxo" onclick="sincronizarPowerBI()">🔄 Sincronizar Power BI</button>
+            <button class="btn-cinza" onclick="abrirAdminProdutos()">⚙️ Admin Produtos</button>
+        </div>
+        <div class="filtros-bar">
+            <strong>Filtros Rápidos:</strong>
+            <select id="f_turno" onchange="aplicarFiltros()"><option value="">Todos</option><option>Manhã</option><option>Tarde</option><option>Noite</option></select>
+            <select id="f_linha" onchange="aplicarFiltros()"><option value="">Todas</option><option>Linha 1</option><option>Linha 2</option><option>Linha 3</option><option>Linha 4</option></select>
+            <button class="btn-cinza" onclick="limparFiltros()">Limpar</button>
+            <div style="flex-grow:1;"></div>
+            <button class="btn-verde" onclick="carregarDadosAdmin()">Atualizar Tabela</button>
+        </div>
+        <div class="tabela-container">
+            <table>
+                <thead><tr><th>ID</th><th>Resp</th><th>Data</th><th>Turno</th><th>Linha</th><th>Máquina</th><th>Produto</th><th>Início</th><th>Fim</th><th>Min</th><th>Qtd</th><th>Motivo</th></tr></thead>
+                <tbody id="tabelaCorpo"><tr><td colspan="12" style="text-align:center;">Carregando...</td></tr></tbody>
+            </table>
+        </div>
+        <div class="rodape-status"><span id="lblRegistros">Registros: 0</span><span id="lblQtd">Qtd Paradas: 0</span><span id="lblMinutos">Minutos: 0 min</span></div>
+    </div>
+
+    <div id="modalAdmin" class="modal">
+        <div class="modal-content card">
+            <h3 id="modalTitulo" style="margin-bottom: 20px; color: var(--cor-azul);">Gerenciamento de Registro</h3>
+            <input type="hidden" id="md_id">
+            <div class="grid-form">
+                <div class="col-2"><label>Responsável:</label><input type="text" id="md_resp" required></div>
+                <div class="col-2"><label>Data:</label><input type="date" id="md_data" required></div>
+                <div class="col-2"><label>Turno:</label><select id="md_turno"><option>Manhã</option><option>Tarde</option><option>Noite</option></select></div>
+                <div class="col-2"><label>Linha:</label><select id="md_linha" onchange="attMaq('md')"><option>Linha 1</option><option>Linha 2</option><option>Linha 3</option><option>Linha 4</option></select></div>
+                <div class="col-2"><label>Máquina:</label><select id="md_maq"></select></div>
+                <div class="col-2 autocomplete"><label>Produto:</label><input type="text" id="md_prod"><div id="list-md_prod" class="autocomplete-items"></div></div>
+                <div class="col-2"><label>Hora Início:</label><input type="text" id="md_ini" required></div>
+                <div class="col-2"><label>Hora Fim:</label><input type="text" id="md_fim" required></div>
+                <div class="col-2"><label>Qtd Paradas:</label><input type="number" id="md_qtd"></div>
+                <div class="col-6"><label>Motivo:</label><input type="text" id="md_motivo" required></div>
+            </div>
+            <div class="modal-buttons" id="modalBotoes"></div>
+        </div>
+    </div>
+
+    <div id="modalProdutos" class="modal">
+        <div class="modal-content card" style="max-width: 600px;">
+            <h3 style="color: var(--cor-azul);">Gerenciador de Produtos</h3>
+            <p style="font-size: 9pt; margin-bottom: 15px; color: var(--cor-cinza);">Adicione ou remova produtos da base de dados. As alterações refletem no sistema instantaneamente.</p>
+            
+            <div style="display:flex; gap:10px; margin-bottom: 20px;">
+                <input type="text" id="novoProdCod" placeholder="Cód." style="width: 25%; margin:0;">
+                <input type="text" id="novoProdNome" placeholder="Nome do Produto..." style="width: 50%; margin:0;">
+                <button class="btn-verde" id="btnSalvarProd" style="width: 25%;" onclick="adicionarProduto()">+ Adicionar</button>
+            </div>
+            
+            <div style="border: 1px solid var(--border-cor); border-radius: 8px; max-height: 250px; overflow-y: auto;">
+                <div id="listaAdminProd">
+                    </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn-cinza" onclick="fecharAdminProdutos()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const URL_API = "https://script.google.com/macros/s/AKfycbyxhBceX3lWCq0CVRI2AyCBZPniwpIrtQ53sqkQlACTxSfBJz618j_A8K8_BnovnFNH/exec";
+
+        let listaProdutos = [];
+        let dadosGlobais = [];
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("op_data").value = new Date().toISOString().split('T')[0];
+            document.getElementById("md_data").value = new Date().toISOString().split('T')[0];
+            attMaq('op'); attMaq('md');
+            ['op_ini','op_fim','md_ini','md_fim'].forEach(id => mascararHora(id));
+            fetch(URL_API + "?aba=produtos").then(res => res.json()).then(lista => {
+                if(Array.isArray(lista) && lista.length > 0) {
+                    listaProdutos = lista; document.getElementById("op_prod").placeholder = "Selecione o produto...";
+                } else document.getElementById("op_prod").placeholder = "Nenhum produto cadastrado";
+                configAuto('op_prod'); configAuto('md_prod');
+            }).catch(e => { document.getElementById("op_prod").placeholder = "Erro ao carregar"; });
+        });
+
+        function mudarTela(id, titulo) {
+            document.querySelectorAll('.container').forEach(e => e.classList.remove('ativa'));
+            document.getElementById(id).classList.add('ativa');
+            document.getElementById('titulo-header').innerText = titulo;
+            document.getElementById('btnSair').style.display = (id === 'tela-login') ? 'none' : 'block';
+        }
+        
+        function fazerLogin() {
+            const u = document.getElementById("loginUser").value.toLowerCase(), p = document.getElementById("loginSenha").value;
+            if(u==="operador" && p==="123") { mudarTela('tela-operador', '🏭 Nova Parada de Máquina'); document.getElementById("op_resp").focus(); }
+            else if(u==="admin" && p==="admin") { mudarTela('tela-admin', '⚙️ Dashboard Admin'); carregarDadosAdmin(); }
+            else alert("Credenciais inválidas!");
+            document.getElementById("loginUser").value=""; document.getElementById("loginSenha").value="";
+        }
+        
+        function logout() { mudarTela('tela-login', '🏭 Lançamento de Paradas'); }
+        function alternarTema() { const b = document.body; b.hasAttribute("data-tema") ? b.removeAttribute("data-tema") : b.setAttribute("data-tema", "escuro"); document.getElementById("btnTema").innerText = b.hasAttribute("data-tema") ? "☀️" : "🌙"; }
+
+        function attMaq(prefixo) {
+            const l = document.getElementById(prefixo+"_linha").value, m = document.getElementById(prefixo+"_maq");
+            m.innerHTML = "";
+            if(l.includes("1") || l.includes("2")) { m.options.add(new Option("Máquina 1")); m.options.add(new Option("Máquina 2")); }
+            else if(l.includes("3")) m.options.add(new Option("Máquina 1"));
+            else m.options.add(new Option("-"));
+        }
+        function mascararHora(id) { document.getElementById(id).addEventListener("input", e => { let v = e.target.value.replace(/\D/g,""); if(v.length >= 3) v = v.substring(0,2)+":"+v.substring(2,4); e.target.value = v; }); }
+        
+        // --- AUTOCOMPLETE INTELIGENTE (Mostra a lista ao clicar) ---
+        function configAuto(id) { 
+            const input = document.getElementById(id), list = document.getElementById("list-"+id); 
+            const mostrarLista = (filtro) => {
+                list.innerHTML = "";
+                listaProdutos.forEach(p => { 
+                    if(!filtro || p.toUpperCase().includes(filtro.toUpperCase())) { 
+                        const d = document.createElement("div"); d.innerText = p; 
+                        d.onclick = () => { input.value = p; list.innerHTML = ""; }; 
+                        list.appendChild(d); 
+                    } 
+                }); 
+            };
+            input.addEventListener("input", function() { mostrarLista(this.value); }); 
+            input.addEventListener("click", function() { mostrarLista(this.value); }); 
+            document.addEventListener("click", e => { if(e.target !== input) list.innerHTML=""; }); 
+        }
+        
+        function calcMin(i, f) { const [h1,m1] = i.split(":").map(Number), [h2,m2] = f.split(":").map(Number); let m = (h2*60+m2)-(h1*60+m1); return m < 0 ? m+1440 : m; }
+
+        function formatarPayload(idElem) {
+            const t = document.getElementById(idElem+"_turno").value, l = document.getElementById(idElem+"_linha").value, m = document.getElementById(idElem+"_maq").value;
+            const t_en = {"Manhã":"Morning", "Tarde":"Afternoon", "Noite":"Night"};
+            const i = document.getElementById(idElem+"_ini").value, f = document.getElementById(idElem+"_fim").value;
+            return {
+                responsavel: document.getElementById(idElem+"_resp").value, data_registro: document.getElementById(idElem+"_data").value.split("-").reverse().join("/"),
+                turno: t, linha: l, maquina: m, produto: document.getElementById(idElem+"_prod").value || "NÃO INFORMADO",
+                hora_inicio: i, hora_fim: f, minutos: calcMin(i,f), qtd: document.getElementById(idElem+"_qtd").value, motivo: document.getElementById(idElem+"_motivo").value,
+                turn_en: t_en[t]||t, line_en: l.replace("Linha","Line"), machine_en: m.replace("Máquina","Machine")
+            };
+        }
+
+        function enviarAPI(dadosMap, btnAlvo, action, callbackSucesso) {
+            const btn = document.getElementById(btnAlvo); const txtOriginal = btn.innerText; btn.disabled = true; btn.innerText = "⏳...";
+            fetch(URL_API, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: action, ...dadosMap }) })
+            .then(() => { btn.disabled = false; btn.innerText = txtOriginal; callbackSucesso(); })
+            .catch(e => { alert("Erro!"); btn.disabled = false; btn.innerText = txtOriginal; });
+        }
+
+        function salvarOperador(e) {
+            e.preventDefault(); const d = formatarPayload("op");
+            if(d.hora_inicio.length<5 || d.hora_fim.length<5) return alert("Hora inválida!");
+            enviarAPI(d, "btnSalvarOp", "insert", () => { alert("Salvo!"); ['op_ini','op_fim','op_motivo','op_prod'].forEach(id => document.getElementById(id).value = ""); document.getElementById("op_qtd").value = "1"; document.getElementById("op_resp").focus(); });
+        }
+
+        function formatarData(dataString) {
+            if (!dataString) return '-';
+            if (dataString.match(/^\d{2}\/\d{2}\/\d{4}$/)) return dataString;
+            try {
+               const dataObj = new Date(dataString);
+               if (isNaN(dataObj)) return dataString; 
+               const dia = String(dataObj.getDate()).padStart(2, '0');
+               const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
+               return `${dia}/${mes}/${dataObj.getFullYear()}`;
+            } catch (e) { return dataString; }
+        }
+
+        function formatarHoraLimpa(horaString) {
+            if (!horaString) return '-';
+            if (horaString.toString().includes('T')) {
+                 const dataObj = new Date(horaString);
+                 if (!isNaN(dataObj)) return dataObj.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit', timeZone:'UTC'});
+            }
+            const partes = horaString.toString().split(":");
+            if (partes.length >= 2) return `${partes[0].padStart(2, '0')}:${partes[1].padStart(2, '0')}`;
+            return horaString;
+        }
+
+        function carregarDadosAdmin() {
+            const tb = document.getElementById("tabelaCorpo"); tb.innerHTML = '<tr><td colspan="12" style="text-align:center;">Carregando...</td></tr>';
+            fetch(URL_API).then(r=>r.json()).then(res => { if(res.status==="sucesso") { dadosGlobais = res.dados; aplicarFiltros(); } });
+        }
+        
+        function aplicarFiltros() {
+            const t = document.getElementById("f_turno").value, l = document.getElementById("f_linha").value;
+            const fil = dadosGlobais.filter(r => (t==="" || r.Turno===t) && (l==="" || r.Linha===l));
+            const tb = document.getElementById("tabelaCorpo"); tb.innerHTML = ""; let tMin=0, tQtd=0;
+            if(fil.length===0) tb.innerHTML = '<tr><td colspan="12" style="text-align:center;">Sem registros.</td></tr>';
+            else fil.forEach(r => {
+                tMin += Number(r.Duracao_Min)||0; tQtd += Number(r.Qtd_Parada)||0; const tr = document.createElement("tr"); tr.ondblclick = () => abrirModal(r);
+                const dataLimpa = formatarData(r.Data); const horaIniLimpa = formatarHoraLimpa(r.Horario); const horaFimLimpa = formatarHoraLimpa(r.Hora_Fim);
+                tr.innerHTML = `<td>${r.ID||'-'}</td><td>${r.Responsavel||'-'}</td><td>${dataLimpa}</td><td>${r.Turno||'-'}</td><td>${r.Linha||'-'}</td><td>${r.Maquina||'-'}</td><td>${r.Produto||'-'}</td><td>${horaIniLimpa}</td><td>${horaFimLimpa}</td><td>${r.Duracao_Min||'0'}</td><td>${r.Qtd_Parada||'0'}</td><td>${r.Motivo||'-'}</td>`;
+                tb.appendChild(tr);
+            });
+            document.getElementById("lblRegistros").innerText = `Registros: ${fil.length}`; document.getElementById("lblQtd").innerText = `Qtd: ${tQtd}`; document.getElementById("lblMinutos").innerText = `Minutos: ${tMin}`;
+        }
+        
+        function limparFiltros() { document.getElementById("f_turno").value=""; document.getElementById("f_linha").value=""; aplicarFiltros(); }
+        function exportarExcel() { let csv = []; document.querySelectorAll("table tr").forEach(row => { let r = []; row.querySelectorAll("td, th").forEach(c => r.push('"'+c.innerText+'"')); csv.push(r.join(";")); }); let a = document.createElement("a"); a.href = window.URL.createObjectURL(new Blob(["\uFEFF"+csv.join("\n")], {type: "text/csv;charset=utf-8;"})); a.download = "Paradas.csv"; a.click(); }
+        function sincronizarPowerBI() { alert("Sincronização Cloud Ativa!\n\nO Power BI lê direto do Sheets!"); }
+
+        function fecharModal() { document.getElementById("modalAdmin").classList.remove("ativa"); }
+        function abrirModal(d) {
+            const modal = document.getElementById("modalAdmin"), botoes = document.getElementById("modalBotoes"); modal.classList.add("ativa"); botoes.innerHTML = "";
+            if(!d) {
+                ['md_id','md_resp','md_prod','md_ini','md_fim','md_motivo'].forEach(id=>document.getElementById(id).value=""); document.getElementById("md_qtd").value="1"; document.getElementById("md_data").value = new Date().toISOString().split('T')[0];
+                botoes.innerHTML = `<button class="btn-verde" id="mdBtnSalvar" onclick="acaoModal('insert')">Salvar Novo</button><button class="btn-cinza" onclick="fecharModal()">Cancelar</button>`;
+            } else {
+                const dataLimpa = formatarData(d.Data); const horaIniLimpa = formatarHoraLimpa(d.Horario); const horaFimLimpa = formatarHoraLimpa(d.Hora_Fim);
+                document.getElementById("md_id").value = d.ID; document.getElementById("md_resp").value = d.Responsavel; 
+                if (dataLimpa && dataLimpa.includes('/')) document.getElementById("md_data").value = dataLimpa.split("/").reverse().join("-");
+                document.getElementById("md_turno").value = d.Turno; document.getElementById("md_linha").value = d.Linha; attMaq('md');
+                document.getElementById("md_maq").value = d.Maquina; document.getElementById("md_prod").value = d.Produto;
+                document.getElementById("md_ini").value = horaIniLimpa; document.getElementById("md_fim").value = horaFimLimpa;
+                document.getElementById("md_qtd").value = d.Qtd_Parada; document.getElementById("md_motivo").value = d.Motivo;
+                botoes.innerHTML = `<button class="btn-amarelo" id="mdBtnAtt" onclick="acaoModal('update')">Atualizar</button><button class="btn-vermelho" id="mdBtnDel" onclick="acaoModal('delete')">Excluir</button><button class="btn-cinza" onclick="fecharModal()">Cancelar</button>`;
+            }
+        }
+        function acaoModal(action) {
+            if(action==="delete" && !confirm("Excluir?")) return;
+            const d = formatarPayload("md"); d.id = document.getElementById("md_id").value;
+            if(action!=="delete" && (d.hora_inicio.length<5 || d.hora_fim.length<5)) return alert("Preencha as horas!");
+            const idBotao = action==='insert' ? 'mdBtnSalvar' : (action==='update' ? 'mdBtnAtt' : 'mdBtnDel');
+            enviarAPI(d, idBotao, action, () => { fecharModal(); carregarDadosAdmin(); });
+        }
+
+        // --- FUNÇÕES ADMIN PRODUTOS ---
+        function abrirAdminProdutos() {
+            document.getElementById("modalProdutos").classList.add("ativa");
+            renderizarListaAdminProd();
+        }
+        function fecharAdminProdutos() { document.getElementById("modalProdutos").classList.remove("ativa"); }
+        
+        function renderizarListaAdminProd() {
+            const container = document.getElementById("listaAdminProd"); container.innerHTML = "";
+            if (listaProdutos.length === 0) { container.innerHTML = "<div style='padding:10px;'>Nenhum produto.</div>"; return; }
+            
+            listaProdutos.forEach(p => {
+                const div = document.createElement("div"); div.className = "item-produto";
+                div.innerHTML = `<span>${p}</span> <button class="btn-vermelho" onclick="deletarProduto('${p}')">Excluir</button>`;
+                container.appendChild(div);
+            });
+        }
+
+        function adicionarProduto() {
+            const cod = document.getElementById("novoProdCod").value;
+            const nome = document.getElementById("novoProdNome").value.toUpperCase();
+            if(!cod || !nome) return alert("Preencha código e nome!");
+            
+            const novo = cod + " | " + nome;
+            listaProdutos.push(novo); // Atualiza na tela logo
+            renderizarListaAdminProd();
+            document.getElementById("novoProdCod").value = ""; document.getElementById("novoProdNome").value = "";
+            
+            // Grava no Sheets
+            enviarAPI({ codigo: cod, nome: nome }, "btnSalvarProd", "insert_prod", () => {});
+        }
+
+        function deletarProduto(strItem) {
+            if(!confirm(`Excluir o produto: ${strItem}?`)) return;
+            const partes = strItem.split(" | ");
+            listaProdutos = listaProdutos.filter(p => p !== strItem); // Remove da tela
+            renderizarListaAdminProd();
+            
+            // Apaga no Sheets
+            fetch(URL_API, { method: "POST", mode: "no-cors", headers: {"Content-Type": "application/json"}, 
+                body: JSON.stringify({ action: "delete_prod", codigo: partes[0], nome: partes[1] }) 
+            });
+        }
+    </script>
+</body>
+</html>
