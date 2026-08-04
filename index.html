@@ -51,9 +51,25 @@
         .autocomplete-items div { padding: 10px; cursor: pointer; border-bottom: 1px solid var(--border-cor); }
         .autocomplete-items div:hover { background-color: var(--cor-azul); color: white; }
         
-        /* Lista de Produtos do Admin */
         .item-produto { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--border-cor); align-items: center; }
         .item-produto button { padding: 5px 10px; font-size: 9pt; }
+
+        /* Estilo dos Botões (Navegação em 2 Etapas) */
+        .grid-motivos { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px; margin-bottom: 10px; }
+        
+        .btn-categoria { background-color: var(--cor-azul); color: white; border: 2px solid transparent; border-radius: 8px; padding: 15px 10px; text-align: center; cursor: pointer; font-weight: bold; font-size: 11pt; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; height: 100%;}
+        .btn-categoria:hover { opacity: 0.9; transform: translateY(-2px); }
+        .btn-categoria.selecionado { background-color: var(--cor-roxo); box-shadow: 0 0 10px rgba(142, 68, 173, 0.6); border: 2px solid #fff; }
+
+        .btn-motivo { background-color: var(--bg-fundo); border: 2px solid var(--border-cor); border-radius: 8px; padding: 12px; text-align: left; cursor: pointer; user-select: none; transition: all 0.2s;}
+        .btn-motivo:hover { border-color: var(--cor-verde); background-color: rgba(155, 197, 61, 0.05); }
+        .btn-motivo.selecionado { border-color: var(--cor-verde); background-color: rgba(155, 197, 61, 0.15); box-shadow: 0 0 8px rgba(155, 197, 61, 0.4); }
+        .btn-motivo strong { display: block; font-size: 10pt; color: var(--cor-azul); margin-bottom: 3px; }
+        .btn-motivo span { display: block; font-size: 8.5pt; color: var(--cor-cinza); line-height: 1.2; }
+        [data-tema="escuro"] .btn-motivo strong { color: #f1f2f6; }
+        [data-tema="escuro"] .btn-motivo span { color: #a4b0be; }
+        
+        .passo-titulo { font-size: 13pt; margin-top: 15px; color: var(--cor-azul); font-weight: bold; border-bottom: 2px solid var(--border-cor); padding-bottom: 5px;}
     </style>
 </head>
 <body>
@@ -75,6 +91,7 @@
         </div>
     </div>
 
+    <!-- TELA DO OPERADOR -->
     <div id="tela-operador" class="container">
         <div class="card">
             <form onsubmit="salvarOperador(event)" autocomplete="off">
@@ -88,13 +105,33 @@
                     <div class="col-2"><label>Hora Início:</label><input type="text" id="op_ini" placeholder="00:00" required></div>
                     <div class="col-2"><label>Hora Fim:</label><input type="text" id="op_fim" placeholder="00:00" required></div>
                     <div class="col-2"><label>Qtd Paradas:</label><input type="number" id="op_qtd" value="1"></div>
-                    <div class="col-6"><label>Motivo:</label><input type="text" id="op_motivo" required></div>
-                    <div class="col-6" style="display:flex; justify-content:center;"><button type="submit" class="btn-verde" id="btnSalvarOp" style="padding:15px 50px; font-size: 14pt;">+ Salvar Registro (Enter)</button></div>
+                    
+                    <!-- NAVEGAÇÃO EM 2 ETAPAS -->
+                    <div class="col-6">
+                        <!-- Etapa 1: Categoria -->
+                        <div class="passo-titulo">Passo 1: Qual a área do problema?</div>
+                        <div class="grid-motivos" id="areaCategoriasOp"></div>
+                        
+                        <!-- Etapa 2: Motivo (Inicialmente Escondido) -->
+                        <div id="areaSubMotivosOpWrapper" style="display: none; margin-top: 25px;">
+                            <div class="passo-titulo" style="color: var(--cor-verde);">Passo 2: Selecione o Motivo Exato</div>
+                            <div class="grid-motivos" id="areaSubMotivosOp"></div>
+                        </div>
+
+                        <!-- Campo invisível e Alerta -->
+                        <input type="hidden" id="op_motivo"> 
+                        <div id="alerta_motivo" style="display:none; color: var(--cor-vermelho); margin-top: 20px; font-weight:bold; text-align: center;">⚠️ ATENÇÃO: Conclua os dois passos escolhendo um motivo final antes de salvar!</div>
+                    </div>
+
+                    <div class="col-6" style="display:flex; justify-content:center; margin-top: 20px;">
+                        <button type="submit" class="btn-verde" id="btnSalvarOp" style="padding:15px 50px; font-size: 14pt;">+ Salvar Registro (Enter)</button>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- TELA DO ADMIN -->
     <div id="tela-admin" class="container">
         <div class="top-bar">
             <button class="btn-verde" onclick="abrirModal(null)">+ Novo Cadastro</button>
@@ -119,6 +156,7 @@
         <div class="rodape-status"><span id="lblRegistros">Registros: 0</span><span id="lblQtd">Qtd Paradas: 0</span><span id="lblMinutos">Minutos: 0 min</span></div>
     </div>
 
+    <!-- MODAL DO ADMIN -->
     <div id="modalAdmin" class="modal">
         <div class="modal-content card">
             <h3 id="modalTitulo" style="margin-bottom: 20px; color: var(--cor-azul);">Gerenciamento de Registro</h3>
@@ -133,12 +171,18 @@
                 <div class="col-2"><label>Hora Início:</label><input type="text" id="md_ini" required></div>
                 <div class="col-2"><label>Hora Fim:</label><input type="text" id="md_fim" required></div>
                 <div class="col-2"><label>Qtd Paradas:</label><input type="number" id="md_qtd"></div>
-                <div class="col-6"><label>Motivo:</label><input type="text" id="md_motivo" required></div>
+                
+                <div class="col-6">
+                    <label>Motivo Exato:</label>
+                    <select id="md_motivo" required></select>
+                </div>
+
             </div>
             <div class="modal-buttons" id="modalBotoes"></div>
         </div>
     </div>
 
+    <!-- MODAL DE PRODUTOS -->
     <div id="modalProdutos" class="modal">
         <div class="modal-content card" style="max-width: 600px;">
             <h3 style="color: var(--cor-azul);">Gerenciador de Produtos</h3>
@@ -151,8 +195,7 @@
             </div>
             
             <div style="border: 1px solid var(--border-cor); border-radius: 8px; max-height: 250px; overflow-y: auto;">
-                <div id="listaAdminProd">
-                    </div>
+                <div id="listaAdminProd"></div>
             </div>
             
             <div class="modal-buttons">
@@ -167,7 +210,110 @@
         let listaProdutos = [];
         let dadosGlobais = [];
 
+        // -----------------------------------------------------------------------------
+        // LISTA CIRÚRGICA DE MOTIVOS
+        // -----------------------------------------------------------------------------
+        const mapaMotivosCirurgicos = {
+            "Insumos e Materiais": [
+                { titulo: "Troca de Componente", desc: "A fita/bobina acabou e precisou ser substituída." },
+                { titulo: "Fita Enroscada (Embuchamento)", desc: "A fita do rolo travou na engrenagem ou tesoura." },
+                { titulo: "Componente Invertido", desc: "O rolo foi colocado virado ou com polaridade errada." }
+            ],
+            "Ferramental (Bicos/Feeders)": [
+                { titulo: "Limpeza de Bico (Nozzle)", desc: "Desobstrução de sujeira ou pasta." },
+                { titulo: "Troca de Bico (Nozzle)", desc: "Substituição por desgaste ou modelo errado." },
+                { titulo: "Limpeza de Feeder", desc: "Remoção de poeira, fita ou sujeira acumulada." },
+                { titulo: "Troca de Feeder", desc: "Substituição do alimentador por falha mecânica." }
+            ],
+            "Operação e Placas": [
+                { titulo: "Setup de Nova OP", desc: "Preparação da máquina para rodar outro produto." },
+                { titulo: "Ajuste de Trilho / Esteira", desc: "Correção na largura ou transporte da placa." },
+                { titulo: "Placa Presa na Máquina", desc: "Placa enroscou fisicamente lá dentro." },
+                { titulo: "Peça Caída Internamente", desc: "Operador abriu a máquina para resgatar componente." },
+                { titulo: "Falha de Pegada (Drop)", desc: "O bico desceu, mas não capturou o componente." }
+            ],
+            "Leituras e Sensores": [
+                { titulo: "Erro de Câmera / Visão", desc: "Falha ao ler o fiducial ou pernas do componente." },
+                { titulo: "Erro de Scanner / Leitor", desc: "Falha ao ler código de barras ou QR Code." },
+                { titulo: "Sensor Sujo / Desalinhado", desc: "Máquina parou por falso aviso de um sensor." },
+                { titulo: "Alarme de Segurança", desc: "A tampa foi aberta (Interlock) ou barreira violada." }
+            ],
+            "Técnica e Infraestrutura": [
+                { titulo: "Travamento do Sistema / PC", desc: "Software congelou, precisou reiniciar." },
+                { titulo: "Manutenção Mecânica", desc: "Falha em eixo, correia, engrenagem (Corretiva)." },
+                { titulo: "Manutenção Elétrica", desc: "Motor parou, cabo rompeu, placa queimou (Corretiva)." },
+                { titulo: "Falta de Ar Comprimido", desc: "Pressão pneumática caiu abaixo do limite." },
+                { titulo: "Queda de Energia Elétrica", desc: "Máquina desligou por falta de luz." },
+                { titulo: "Queda de Rede (Servidor)", desc: "Máquina perdeu comunicação com a rede." }
+            ]
+        };
+
+        function iniciarMotivos() {
+            const areaCat = document.getElementById("areaCategoriasOp");
+            const selAdmin = document.getElementById("md_motivo");
+            areaCat.innerHTML = "";
+            selAdmin.innerHTML = '<option value="">Selecione o Motivo...</option>';
+
+            for (const [categoria, motivos] of Object.entries(mapaMotivosCirurgicos)) {
+                
+                // Preenche a lista do Admin
+                motivos.forEach(m => selAdmin.options.add(new Option(m.titulo, m.titulo)));
+
+                // Cria Botões de Categoria (Passo 1)
+                const btnCat = document.createElement("div");
+                btnCat.className = "btn-categoria";
+                btnCat.innerText = categoria;
+                btnCat.onclick = function() {
+                    // Verifica se já está selecionado
+                    if (this.classList.contains("selecionado")) {
+                        // Se sim, DESMARCA
+                        this.classList.remove("selecionado");
+                        document.getElementById("areaSubMotivosOpWrapper").style.display = "none";
+                        document.getElementById("op_motivo").value = "";
+                    } else {
+                        // Se não, MARCA e exibe o submenu
+                        document.querySelectorAll(".btn-categoria").forEach(el => el.classList.remove("selecionado"));
+                        this.classList.add("selecionado");
+                        document.getElementById("op_motivo").value = "";
+                        mostrarSubMotivos(motivos);
+                    }
+                };
+                areaCat.appendChild(btnCat);
+            }
+        }
+
+        function mostrarSubMotivos(motivos) {
+            const wrapper = document.getElementById("areaSubMotivosOpWrapper");
+            const areaSub = document.getElementById("areaSubMotivosOp");
+            
+            areaSub.innerHTML = "";
+            wrapper.style.display = "block"; // Revela o Passo 2
+            
+            motivos.forEach(m => {
+                const btn = document.createElement("div");
+                btn.className = "btn-motivo";
+                btn.onclick = function() {
+                    // Verifica se já está selecionado
+                    if (this.classList.contains("selecionado")) {
+                        // Se sim, DESMARCA
+                        this.classList.remove("selecionado");
+                        document.getElementById("op_motivo").value = "";
+                    } else {
+                        // Se não, MARCA
+                        document.querySelectorAll("#areaSubMotivosOp .btn-motivo").forEach(el => el.classList.remove("selecionado"));
+                        this.classList.add("selecionado");
+                        document.getElementById("op_motivo").value = m.titulo; 
+                        document.getElementById("alerta_motivo").style.display = "none";
+                    }
+                };
+                btn.innerHTML = `<strong>${m.titulo}</strong><span>Ex: ${m.desc}</span>`;
+                areaSub.appendChild(btn);
+            });
+        }
+        // -----------------------------------------------------------------------------
+
         document.addEventListener("DOMContentLoaded", () => {
+            iniciarMotivos();
             document.getElementById("op_data").value = new Date().toISOString().split('T')[0];
             document.getElementById("md_data").value = new Date().toISOString().split('T')[0];
             attMaq('op'); attMaq('md');
@@ -207,7 +353,6 @@
         }
         function mascararHora(id) { document.getElementById(id).addEventListener("input", e => { let v = e.target.value.replace(/\D/g,""); if(v.length >= 3) v = v.substring(0,2)+":"+v.substring(2,4); e.target.value = v; }); }
         
-        // --- AUTOCOMPLETE INTELIGENTE (Mostra a lista ao clicar) ---
         function configAuto(id) { 
             const input = document.getElementById(id), list = document.getElementById("list-"+id); 
             const mostrarLista = (filtro) => {
@@ -247,9 +392,28 @@
         }
 
         function salvarOperador(e) {
-            e.preventDefault(); const d = formatarPayload("op");
+            e.preventDefault();
+            
+            // Valida se ele selecionou a bolinha final mesmo
+            if (!document.getElementById("op_motivo").value) {
+                document.getElementById("alerta_motivo").style.display = "block";
+                return;
+            }
+
+            const d = formatarPayload("op");
             if(d.hora_inicio.length<5 || d.hora_fim.length<5) return alert("Hora inválida!");
-            enviarAPI(d, "btnSalvarOp", "insert", () => { alert("Salvo!"); ['op_ini','op_fim','op_motivo','op_prod'].forEach(id => document.getElementById(id).value = ""); document.getElementById("op_qtd").value = "1"; document.getElementById("op_resp").focus(); });
+            
+            enviarAPI(d, "btnSalvarOp", "insert", () => { 
+                alert("Salvo!"); 
+                ['op_ini','op_fim','op_motivo','op_prod'].forEach(id => document.getElementById(id).value = ""); 
+                document.getElementById("op_qtd").value = "1"; 
+                
+                // Reseta a interface dos botões
+                document.querySelectorAll(".btn-categoria").forEach(el => el.classList.remove("selecionado"));
+                document.getElementById("areaSubMotivosOpWrapper").style.display = "none";
+                
+                document.getElementById("op_resp").focus(); 
+            });
         }
 
         function formatarData(dataString) {
@@ -311,7 +475,13 @@
                 document.getElementById("md_turno").value = d.Turno; document.getElementById("md_linha").value = d.Linha; attMaq('md');
                 document.getElementById("md_maq").value = d.Maquina; document.getElementById("md_prod").value = d.Produto;
                 document.getElementById("md_ini").value = horaIniLimpa; document.getElementById("md_fim").value = horaFimLimpa;
-                document.getElementById("md_qtd").value = d.Qtd_Parada; document.getElementById("md_motivo").value = d.Motivo;
+                document.getElementById("md_qtd").value = d.Qtd_Parada; 
+                
+                const sel = document.getElementById("md_motivo");
+                let existe = Array.from(sel.options).some(opt => opt.value === d.Motivo);
+                if(!existe) sel.options.add(new Option(d.Motivo + " (Antigo)", d.Motivo));
+                sel.value = d.Motivo;
+
                 botoes.innerHTML = `<button class="btn-amarelo" id="mdBtnAtt" onclick="acaoModal('update')">Atualizar</button><button class="btn-vermelho" id="mdBtnDel" onclick="acaoModal('delete')">Excluir</button><button class="btn-cinza" onclick="fecharModal()">Cancelar</button>`;
             }
         }
@@ -347,21 +517,19 @@
             if(!cod || !nome) return alert("Preencha código e nome!");
             
             const novo = cod + " | " + nome;
-            listaProdutos.push(novo); // Atualiza na tela logo
+            listaProdutos.push(novo); 
             renderizarListaAdminProd();
             document.getElementById("novoProdCod").value = ""; document.getElementById("novoProdNome").value = "";
             
-            // Grava no Sheets
             enviarAPI({ codigo: cod, nome: nome }, "btnSalvarProd", "insert_prod", () => {});
         }
 
         function deletarProduto(strItem) {
             if(!confirm(`Excluir o produto: ${strItem}?`)) return;
             const partes = strItem.split(" | ");
-            listaProdutos = listaProdutos.filter(p => p !== strItem); // Remove da tela
+            listaProdutos = listaProdutos.filter(p => p !== strItem);
             renderizarListaAdminProd();
             
-            // Apaga no Sheets
             fetch(URL_API, { method: "POST", mode: "no-cors", headers: {"Content-Type": "application/json"}, 
                 body: JSON.stringify({ action: "delete_prod", codigo: partes[0], nome: partes[1] }) 
             });
