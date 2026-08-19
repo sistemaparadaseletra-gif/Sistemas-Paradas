@@ -44,19 +44,19 @@
         .rodape-status { display: flex; justify-content: space-between; padding: 15px; background-color: var(--bg-card); border: 1px solid var(--border-cor); border-radius: 8px; margin-top: 15px; font-weight: bold; }
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
         .modal.ativa { display: flex; }
-        .modal-content { width: 100%; max-width: 950px; position: relative; }
+        .modal-content { width: 100%; max-width: 950px; position: relative; max-height: 90vh; overflow-y: auto; }
         .modal-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
         .autocomplete { position: relative; }
         .autocomplete-items { position: absolute; border: 1px solid var(--border-cor); background-color: var(--bg-card); z-index: 99; top: 100%; left: 0; right: 0; max-height: 200px; overflow-y: auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .autocomplete-items div { padding: 10px; cursor: pointer; border-bottom: 1px solid var(--border-cor); }
         .autocomplete-items div:hover { background-color: var(--cor-azul); color: white; }
-        
+
         .item-produto { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--border-cor); align-items: center; }
         .item-produto button { padding: 5px 10px; font-size: 9pt; }
 
         /* Estilo dos Botões (Navegação em 2 Etapas) */
         .grid-motivos { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px; margin-bottom: 10px; }
-        
+
         .btn-categoria { background-color: var(--cor-azul); color: white; border: 2px solid transparent; border-radius: 8px; padding: 15px 10px; text-align: center; cursor: pointer; font-weight: bold; font-size: 11pt; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; height: 100%;}
         .btn-categoria:hover { opacity: 0.9; transform: translateY(-2px); }
         .btn-categoria.selecionado { background-color: var(--cor-roxo); box-shadow: 0 0 10px rgba(142, 68, 173, 0.6); border: 2px solid #fff; }
@@ -68,8 +68,9 @@
         .btn-motivo span { display: block; font-size: 8.5pt; color: var(--cor-cinza); line-height: 1.2; }
         [data-tema="escuro"] .btn-motivo strong { color: #f1f2f6; }
         [data-tema="escuro"] .btn-motivo span { color: #a4b0be; }
-        
+
         .passo-titulo { font-size: 13pt; margin-top: 15px; color: var(--cor-azul); font-weight: bold; border-bottom: 2px solid var(--border-cor); padding-bottom: 5px;}
+        .aviso-motivo-antigo { display: none; color: var(--cor-amarelo); font-size: 9pt; margin-top: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -104,22 +105,18 @@
                     <div class="col-2 autocomplete"><label>Produto (TDS):</label><input type="text" id="op_prod" placeholder="A carregar..."><div id="list-op_prod" class="autocomplete-items"></div></div>
                     <div class="col-2"><label>Hora Início:</label><input type="text" id="op_ini" placeholder="00:00" required></div>
                     <div class="col-2"><label>Hora Fim:</label><input type="text" id="op_fim" placeholder="00:00" required></div>
-                    <div class="col-2"><label>Qtd Paradas:</label><input type="number" id="op_qtd" value="1"></div>
-                    
-                    <!-- NAVEGAÇÃO EM 2 ETAPAS -->
+                    <div class="col-2"><label>Qtd Paradas:</label><input type="number" id="op_qtd" value="1" min="1"></div>
+
                     <div class="col-6">
-                        <!-- Etapa 1: Categoria -->
                         <div class="passo-titulo">Passo 1: Qual a área do problema?</div>
                         <div class="grid-motivos" id="areaCategoriasOp"></div>
-                        
-                        <!-- Etapa 2: Motivo (Inicialmente Escondido) -->
+
                         <div id="areaSubMotivosOpWrapper" style="display: none; margin-top: 25px;">
                             <div class="passo-titulo" style="color: var(--cor-verde);">Passo 2: Selecione o Motivo Exato</div>
                             <div class="grid-motivos" id="areaSubMotivosOp"></div>
                         </div>
 
-                        <!-- Campo invisível e Alerta -->
-                        <input type="hidden" id="op_motivo"> 
+                        <input type="hidden" id="op_motivo">
                         <div id="alerta_motivo" style="display:none; color: var(--cor-vermelho); margin-top: 20px; font-weight:bold; text-align: center;">⚠️ ATENÇÃO: Conclua os dois passos escolhendo um motivo final antes de salvar!</div>
                     </div>
 
@@ -170,13 +167,21 @@
                 <div class="col-2 autocomplete"><label>Produto:</label><input type="text" id="md_prod"><div id="list-md_prod" class="autocomplete-items"></div></div>
                 <div class="col-2"><label>Hora Início:</label><input type="text" id="md_ini" required></div>
                 <div class="col-2"><label>Hora Fim:</label><input type="text" id="md_fim" required></div>
-                <div class="col-2"><label>Qtd Paradas:</label><input type="number" id="md_qtd"></div>
-                
-                <div class="col-6">
-                    <label>Motivo Exato:</label>
-                    <select id="md_motivo" required></select>
-                </div>
+                <div class="col-2"><label>Qtd Paradas:</label><input type="number" id="md_qtd" min="1"></div>
 
+                <!-- MOTIVO: mesma navegação em 2 etapas do operador (categoria -> motivo) -->
+                <div class="col-6">
+                    <div class="passo-titulo">Passo 1: Qual a área do problema?</div>
+                    <div class="grid-motivos" id="areaCategoriasMd"></div>
+
+                    <div id="areaSubMotivosMdWrapper" style="display: none; margin-top: 25px;">
+                        <div class="passo-titulo" style="color: var(--cor-verde);">Passo 2: Selecione o Motivo Exato</div>
+                        <div class="grid-motivos" id="areaSubMotivosMd"></div>
+                    </div>
+
+                    <input type="hidden" id="md_motivo" required>
+                    <div id="aviso_motivo_antigo_md" class="aviso-motivo-antigo">⚠️ Este registro tem um motivo que não existe mais na lista atual. O valor original foi mantido.</div>
+                </div>
             </div>
             <div class="modal-buttons" id="modalBotoes"></div>
         </div>
@@ -187,17 +192,17 @@
         <div class="modal-content card" style="max-width: 600px;">
             <h3 style="color: var(--cor-azul);">Gerenciador de Produtos</h3>
             <p style="font-size: 9pt; margin-bottom: 15px; color: var(--cor-cinza);">Adicione ou remova produtos da base de dados. As alterações refletem no sistema instantaneamente.</p>
-            
+
             <div style="display:flex; gap:10px; margin-bottom: 20px;">
                 <input type="text" id="novoProdCod" placeholder="Cód." style="width: 25%; margin:0;">
                 <input type="text" id="novoProdNome" placeholder="Nome do Produto..." style="width: 50%; margin:0;">
                 <button class="btn-verde" id="btnSalvarProd" style="width: 25%;" onclick="adicionarProduto()">+ Adicionar</button>
             </div>
-            
+
             <div style="border: 1px solid var(--border-cor); border-radius: 8px; max-height: 250px; overflow-y: auto;">
                 <div id="listaAdminProd"></div>
             </div>
-            
+
             <div class="modal-buttons">
                 <button class="btn-cinza" onclick="fecharAdminProdutos()">Fechar</button>
             </div>
@@ -205,41 +210,54 @@
     </div>
 
     <script>
-        const URL_API = "https://script.google.com/macros/s/AKfycbyxhBceX3lWCq0CVRI2AyCBZPniwpIrtQ53sqkQlACTxSfBJz618j_A8K8_BnovnFNH/exec";
+        // =============================================================================
+        // CONFIGURAÇÃO E ESTADO GLOBAL
+        // =============================================================================
+        const URL_API = "https://script.google.com/macros/s/AKfycbxhBgbMJTCU1QU8j8uyU79Nzm2JU7CjivJQLZ5BUmRL2NeCjLTr7CC6ZMtUWzYW_AKG/exec";
 
-        let listaProdutos = [];
-        let dadosGlobais = [];
+        // Login simples local — controle de acesso está a cargo de quem administra o link (uso interno).
+        const CREDENCIAIS = {
+            operador: { senha: "123", tela: "tela-operador", titulo: "🏭 Nova Parada de Máquina" },
+            admin: { senha: "admin", tela: "tela-admin", titulo: "⚙️ Dashboard Admin" },
+        };
 
-        // -----------------------------------------------------------------------------
-        // LISTA CIRÚRGICA DE MOTIVOS
-        // -----------------------------------------------------------------------------
-        const mapaMotivosCirurgicos = {
+        let produtos = [];   // [{ codigo, nome }]
+        let registros = [];  // dados carregados da planilha (tela admin)
+
+        // Lista de motivos "cirúrgicos", organizada por categoria (Passo 1 -> Passo 2).
+        // Usada tanto na tela do Operador (prefixo "op") quanto no modal do Admin (prefixo "md").
+        const MAPA_MOTIVOS = {
             "Insumos e Materiais": [
                 { titulo: "Troca de Componente", desc: "A fita/bobina acabou e precisou ser substituída." },
                 { titulo: "Fita Enroscada (Embuchamento)", desc: "A fita do rolo travou na engrenagem ou tesoura." },
-                { titulo: "Componente Invertido", desc: "O rolo foi colocado virado ou com polaridade errada." }
+                { titulo: "Descarte de Componente", desc: "Material danificado, caído ou rejeitado pela máquina." }
             ],
             "Ferramental (Bicos/Feeders)": [
                 { titulo: "Limpeza de Bico (Nozzle)", desc: "Desobstrução de sujeira ou pasta." },
                 { titulo: "Troca de Bico (Nozzle)", desc: "Substituição por desgaste ou modelo errado." },
                 { titulo: "Limpeza de Feeder", desc: "Remoção de poeira, fita ou sujeira acumulada." },
-                { titulo: "Troca de Feeder", desc: "Substituição do alimentador por falha mecânica." }
+                { titulo: "Troca de Feeder", desc: "Substituição do alimentador por falha mecânica." },
+                { titulo: "Falha de Pegada (Drop)", desc: "O bico desceu, mas não capturou o componente." },
+                { titulo: "Problema na Lâmina de Corte", desc: "A tesoura/guilhotina travou, quebrou ou precisou ser trocada."},
+
             ],
-            "Operação e Placas": [
+            "Operação e Intervenção": [
                 { titulo: "Setup de Nova OP", desc: "Preparação da máquina para rodar outro produto." },
+                { titulo: "Componente Invertido", desc: "O rolo foi colocado virado ou com polaridade errada." },
                 { titulo: "Ajuste de Trilho / Esteira", desc: "Correção na largura ou transporte da placa." },
                 { titulo: "Placa Presa na Máquina", desc: "Placa enroscou fisicamente lá dentro." },
                 { titulo: "Peça Caída Internamente", desc: "Operador abriu a máquina para resgatar componente." },
-                { titulo: "Falha de Pegada (Drop)", desc: "O bico desceu, mas não capturou o componente." }
-            ],
-            "Leituras e Sensores": [
-                { titulo: "Erro de Câmera / Visão", desc: "Falha ao ler o fiducial ou pernas do componente." },
-                { titulo: "Erro de Scanner / Leitor", desc: "Falha ao ler código de barras ou QR Code." },
-                { titulo: "Sensor Sujo / Desalinhado", desc: "Máquina parou por falso aviso de um sensor." },
+                { titulo: "Interferência de Componente", desc: "Uma peça colidiu, encavalou ou foi montada sobre outra." },
                 { titulo: "Alarme de Segurança", desc: "A tampa foi aberta (Interlock) ou barreira violada." }
             ],
+            "Visão e Sensores": [
+                { titulo: "Erro de Câmera / Visão", desc: "Falha ao ler o fiducial ou pernas do componente." },
+                { titulo: "Ajuste de Alinhamento", desc: "Correção nas coordenadas ou ângulo de inserção." },
+                { titulo: "Erro de Scanner / Leitor", desc: "Falha ao ler código de barras ou QR Code." },
+                { titulo: "Problema no Sensor", desc: "Sensor sujo, desalinhado, danificado ou com falso alarme." }
+            ],
             "Técnica e Infraestrutura": [
-                { titulo: "Travamento do Sistema / PC", desc: "Software congelou, precisou reiniciar." },
+                { titulo: "Queda ou Falha do Sistema", desc: "Software congelou ou precisou reiniciar." },
                 { titulo: "Manutenção Mecânica", desc: "Falha em eixo, correia, engrenagem (Corretiva)." },
                 { titulo: "Manutenção Elétrica", desc: "Motor parou, cabo rompeu, placa queimou (Corretiva)." },
                 { titulo: "Falta de Ar Comprimido", desc: "Pressão pneumática caiu abaixo do limite." },
@@ -248,291 +266,607 @@
             ]
         };
 
-        function iniciarMotivos() {
-            const areaCat = document.getElementById("areaCategoriasOp");
-            const selAdmin = document.getElementById("md_motivo");
-            areaCat.innerHTML = "";
-            selAdmin.innerHTML = '<option value="">Selecione o Motivo...</option>';
+        // =============================================================================
+        // UTILITÁRIOS GERAIS
+        // =============================================================================
+        const $ = (id) => document.getElementById(id);
+        const val = (id) => $(id).value;
+        const setVal = (id, v) => { $(id).value = v ?? ""; };
+        const capitalizar = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
-            for (const [categoria, motivos] of Object.entries(mapaMotivosCirurgicos)) {
-                
-                // Preenche a lista do Admin
-                motivos.forEach(m => selAdmin.options.add(new Option(m.titulo, m.titulo)));
+        function limparCampos(ids) { ids.forEach((id) => setVal(id, "")); }
 
-                // Cria Botões de Categoria (Passo 1)
-                const btnCat = document.createElement("div");
-                btnCat.className = "btn-categoria";
-                btnCat.innerText = categoria;
-                btnCat.onclick = function() {
-                    // Verifica se já está selecionado
-                    if (this.classList.contains("selecionado")) {
-                        // Se sim, DESMARCA
-                        this.classList.remove("selecionado");
-                        document.getElementById("areaSubMotivosOpWrapper").style.display = "none";
-                        document.getElementById("op_motivo").value = "";
-                    } else {
-                        // Se não, MARCA e exibe o submenu
-                        document.querySelectorAll(".btn-categoria").forEach(el => el.classList.remove("selecionado"));
-                        this.classList.add("selecionado");
-                        document.getElementById("op_motivo").value = "";
-                        mostrarSubMotivos(motivos);
-                    }
-                };
-                areaCat.appendChild(btnCat);
-            }
+        function criarElemento(tag, props = {}, filhos = []) {
+            const el = document.createElement(tag);
+            Object.entries(props).forEach(([k, v]) => {
+                if (k === "class") el.className = v;
+                else if (k === "text") el.textContent = v;
+                else if (k.startsWith("on") && typeof v === "function") el.addEventListener(k.slice(2), v);
+                else el.setAttribute(k, v);
+            });
+            filhos.forEach((f) => el.appendChild(f));
+            return el;
         }
 
-        function mostrarSubMotivos(motivos) {
-            const wrapper = document.getElementById("areaSubMotivosOpWrapper");
-            const areaSub = document.getElementById("areaSubMotivosOp");
-            
-            areaSub.innerHTML = "";
-            wrapper.style.display = "block"; // Revela o Passo 2
-            
-            motivos.forEach(m => {
-                const btn = document.createElement("div");
-                btn.className = "btn-motivo";
-                btn.onclick = function() {
-                    // Verifica se já está selecionado
-                    if (this.classList.contains("selecionado")) {
-                        // Se sim, DESMARCA
-                        this.classList.remove("selecionado");
-                        document.getElementById("op_motivo").value = "";
-                    } else {
-                        // Se não, MARCA
-                        document.querySelectorAll("#areaSubMotivosOp .btn-motivo").forEach(el => el.classList.remove("selecionado"));
-                        this.classList.add("selecionado");
-                        document.getElementById("op_motivo").value = m.titulo; 
-                        document.getElementById("alerta_motivo").style.display = "none";
-                    }
-                };
-                btn.innerHTML = `<strong>${m.titulo}</strong><span>Ex: ${m.desc}</span>`;
-                areaSub.appendChild(btn);
+        // =============================================================================
+        // COMUNICAÇÃO COM A API (sem no-cors: agora lemos o resultado de verdade)
+        // =============================================================================
+
+        /** GET simples. */
+        function apiGet(query = "") {
+            return fetch(URL_API + query)
+            .then(async (r) => {
+                const textoResposta = await r.text();
+                try {
+                    return JSON.parse(textoResposta);
+                } catch (erro) {
+                    console.error("Erro na leitura (não é JSON):", textoResposta);
+                    alert("Aviso: Falha de comunicação com o servidor. Atualize a página (F5) para tentar novamente.");
+                    return { status: "erro", dados: [] }; 
+                }
+            });
+}
+
+        /**
+         * POST para o Apps Script. Content-Type "text/plain" evita o preflight CORS
+         * (que o Apps Script não trata), permitindo ler a resposta real em vez de
+         * usar "no-cors" (que mascarava qualquer erro do backend).
+         */
+        function apiPost(payload) {
+            return fetch(URL_API, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(payload),
+            })
+            .then(async (r) => {
+                const textoResposta = await r.text(); // Lê a resposta pura primeiro
+                
+                try {
+                    return JSON.parse(textoResposta); // Tenta converter para JSON
+                } catch (erro) {
+                    // Se o Google engasgar e devolver HTML (<!DOCTYPE...), cai aqui
+                    console.error("Resposta do servidor não foi um JSON:", textoResposta);
+                    throw new Error("O servidor do Google ficou sobrecarregado ou a rede oscilou. Por favor, clique em Salvar novamente.");
+                }
             });
         }
-        // -----------------------------------------------------------------------------
 
-        document.addEventListener("DOMContentLoaded", () => {
-            iniciarMotivos();
-            document.getElementById("op_data").value = new Date().toISOString().split('T')[0];
-            document.getElementById("md_data").value = new Date().toISOString().split('T')[0];
-            attMaq('op'); attMaq('md');
-            ['op_ini','op_fim','md_ini','md_fim'].forEach(id => mascararHora(id));
-            fetch(URL_API + "?aba=produtos").then(res => res.json()).then(lista => {
-                if(Array.isArray(lista) && lista.length > 0) {
-                    listaProdutos = lista; document.getElementById("op_prod").placeholder = "Selecione o produto...";
-                } else document.getElementById("op_prod").placeholder = "Nenhum produto cadastrado";
-                configAuto('op_prod'); configAuto('md_prod');
-            }).catch(e => { document.getElementById("op_prod").placeholder = "Erro ao carregar"; });
-        });
+        /** Executa uma ação de escrita, gerenciando estado do botão e erros. */
+        function executarAcao(payload, btnId, aoSucesso) {
+            const btn = $(btnId);
+            const textoOriginal = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = "⏳...";
 
-        function mudarTela(id, titulo) {
-            document.querySelectorAll('.container').forEach(e => e.classList.remove('ativa'));
-            document.getElementById(id).classList.add('ativa');
-            document.getElementById('titulo-header').innerText = titulo;
-            document.getElementById('btnSair').style.display = (id === 'tela-login') ? 'none' : 'block';
-        }
-        
-        function fazerLogin() {
-            const u = document.getElementById("loginUser").value.toLowerCase(), p = document.getElementById("loginSenha").value;
-            if(u==="operador" && p==="123") { mudarTela('tela-operador', '🏭 Nova Parada de Máquina'); document.getElementById("op_resp").focus(); }
-            else if(u==="admin" && p==="admin") { mudarTela('tela-admin', '⚙️ Dashboard Admin'); carregarDadosAdmin(); }
-            else alert("Credenciais inválidas!");
-            document.getElementById("loginUser").value=""; document.getElementById("loginSenha").value="";
-        }
-        
-        function logout() { mudarTela('tela-login', '🏭 Lançamento de Paradas'); }
-        function alternarTema() { const b = document.body; b.hasAttribute("data-tema") ? b.removeAttribute("data-tema") : b.setAttribute("data-tema", "escuro"); document.getElementById("btnTema").innerText = b.hasAttribute("data-tema") ? "☀️" : "🌙"; }
-
-        function attMaq(prefixo) {
-            const l = document.getElementById(prefixo+"_linha").value, m = document.getElementById(prefixo+"_maq");
-            m.innerHTML = "";
-            if(l.includes("1") || l.includes("2")) { m.options.add(new Option("Máquina 1")); m.options.add(new Option("Máquina 2")); }
-            else if(l.includes("3")) m.options.add(new Option("Máquina 1"));
-            else m.options.add(new Option("-"));
-        }
-        function mascararHora(id) { document.getElementById(id).addEventListener("input", e => { let v = e.target.value.replace(/\D/g,""); if(v.length >= 3) v = v.substring(0,2)+":"+v.substring(2,4); e.target.value = v; }); }
-        
-        function configAuto(id) { 
-            const input = document.getElementById(id), list = document.getElementById("list-"+id); 
-            const mostrarLista = (filtro) => {
-                list.innerHTML = "";
-                listaProdutos.forEach(p => { 
-                    if(!filtro || p.toUpperCase().includes(filtro.toUpperCase())) { 
-                        const d = document.createElement("div"); d.innerText = p; 
-                        d.onclick = () => { input.value = p; list.innerHTML = ""; }; 
-                        list.appendChild(d); 
-                    } 
-                }); 
-            };
-            input.addEventListener("input", function() { mostrarLista(this.value); }); 
-            input.addEventListener("click", function() { mostrarLista(this.value); }); 
-            document.addEventListener("click", e => { if(e.target !== input) list.innerHTML=""; }); 
-        }
-        
-        function calcMin(i, f) { const [h1,m1] = i.split(":").map(Number), [h2,m2] = f.split(":").map(Number); let m = (h2*60+m2)-(h1*60+m1); return m < 0 ? m+1440 : m; }
-
-        function formatarPayload(idElem) {
-            const t = document.getElementById(idElem+"_turno").value, l = document.getElementById(idElem+"_linha").value, m = document.getElementById(idElem+"_maq").value;
-            const t_en = {"Manhã":"Morning", "Tarde":"Afternoon", "Noite":"Night"};
-            const i = document.getElementById(idElem+"_ini").value, f = document.getElementById(idElem+"_fim").value;
-            return {
-                responsavel: document.getElementById(idElem+"_resp").value, data_registro: document.getElementById(idElem+"_data").value.split("-").reverse().join("/"),
-                turno: t, linha: l, maquina: m, produto: document.getElementById(idElem+"_prod").value || "NÃO INFORMADO",
-                hora_inicio: i, hora_fim: f, minutos: calcMin(i,f), qtd: document.getElementById(idElem+"_qtd").value, motivo: document.getElementById(idElem+"_motivo").value,
-                turn_en: t_en[t]||t, line_en: l.replace("Linha","Line"), machine_en: m.replace("Máquina","Machine")
-            };
+            return apiPost(payload)
+                .then((res) => {
+                    if (res.status !== "sucesso") throw new Error(res.mensagem || "Erro desconhecido no servidor.");
+                    aoSucesso(res);
+                })
+                .catch((err) => alert("Erro ao salvar: " + err.message))
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerText = textoOriginal;
+                });
         }
 
-        function enviarAPI(dadosMap, btnAlvo, action, callbackSucesso) {
-            const btn = document.getElementById(btnAlvo); const txtOriginal = btn.innerText; btn.disabled = true; btn.innerText = "⏳...";
-            fetch(URL_API, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: action, ...dadosMap }) })
-            .then(() => { btn.disabled = false; btn.innerText = txtOriginal; callbackSucesso(); })
-            .catch(e => { alert("Erro!"); btn.disabled = false; btn.innerText = txtOriginal; });
+        // =============================================================================
+        // MOTIVOS (Navegação em 2 etapas) — genérico para qualquer prefixo ("op" ou "md")
+        // =============================================================================
+
+        /** Monta os botões de categoria (Passo 1) dentro de #areaCategorias<Prefixo>. */
+        function iniciarMotivos(prefixo) {
+            const areaCategorias = $("areaCategorias" + capitalizar(prefixo));
+            areaCategorias.innerHTML = "";
+
+            Object.entries(MAPA_MOTIVOS).forEach(([categoria, motivos]) => {
+                const btnCategoria = criarElemento("div", {
+                    class: "btn-categoria",
+                    text: categoria,
+                    onclick(ev) { alternarCategoria(ev.currentTarget, motivos, prefixo); },
+                });
+                areaCategorias.appendChild(btnCategoria);
+            });
         }
 
-        function salvarOperador(e) {
-            e.preventDefault();
-            
-            // Valida se ele selecionou a bolinha final mesmo
-            if (!document.getElementById("op_motivo").value) {
-                document.getElementById("alerta_motivo").style.display = "block";
+        function alternarCategoria(btn, motivos, prefixo) {
+            const wrapper = $("areaSubMotivos" + capitalizar(prefixo) + "Wrapper");
+
+            if (btn.classList.contains("selecionado")) {
+                btn.classList.remove("selecionado");
+                wrapper.style.display = "none";
+                setVal(prefixo + "_motivo", "");
                 return;
             }
 
-            const d = formatarPayload("op");
-            if(d.hora_inicio.length<5 || d.hora_fim.length<5) return alert("Hora inválida!");
-            
-            enviarAPI(d, "btnSalvarOp", "insert", () => { 
-                alert("Salvo!"); 
-                ['op_ini','op_fim','op_motivo','op_prod'].forEach(id => document.getElementById(id).value = ""); 
-                document.getElementById("op_qtd").value = "1"; 
-                
-                // Reseta a interface dos botões
-                document.querySelectorAll(".btn-categoria").forEach(el => el.classList.remove("selecionado"));
-                document.getElementById("areaSubMotivosOpWrapper").style.display = "none";
-                
-                document.getElementById("op_resp").focus(); 
+            document.querySelectorAll("#areaCategorias" + capitalizar(prefixo) + " .btn-categoria")
+                .forEach((el) => el.classList.remove("selecionado"));
+            btn.classList.add("selecionado");
+            setVal(prefixo + "_motivo", "");
+            mostrarSubMotivos(motivos, prefixo);
+        }
+
+        /** Monta os botões de motivo (Passo 2) dentro de #areaSubMotivos<Prefixo>. */
+        function mostrarSubMotivos(motivos, prefixo) {
+            const wrapper = $("areaSubMotivos" + capitalizar(prefixo) + "Wrapper");
+            const area = $("areaSubMotivos" + capitalizar(prefixo));
+            area.innerHTML = "";
+            wrapper.style.display = "block";
+
+            motivos.forEach((m) => {
+                const btn = criarElemento(
+                    "div",
+                    { class: "btn-motivo", onclick(ev) { alternarSubMotivo(ev.currentTarget, m.titulo, prefixo); } },
+                    [
+                        criarElemento("strong", { text: m.titulo }),
+                        criarElemento("span", { text: "Ex: " + m.desc }),
+                    ]
+                );
+                area.appendChild(btn);
             });
         }
 
-        function formatarData(dataString) {
-            if (!dataString) return '-';
-            if (dataString.match(/^\d{2}\/\d{2}\/\d{4}$/)) return dataString;
-            try {
-               const dataObj = new Date(dataString);
-               if (isNaN(dataObj)) return dataString; 
-               const dia = String(dataObj.getDate()).padStart(2, '0');
-               const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
-               return `${dia}/${mes}/${dataObj.getFullYear()}`;
-            } catch (e) { return dataString; }
-        }
-
-        function formatarHoraLimpa(horaString) {
-            if (!horaString) return '-';
-            if (horaString.toString().includes('T')) {
-                 const dataObj = new Date(horaString);
-                 if (!isNaN(dataObj)) return dataObj.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit', timeZone:'UTC'});
+        function alternarSubMotivo(btn, titulo, prefixo) {
+            if (btn.classList.contains("selecionado")) {
+                btn.classList.remove("selecionado");
+                setVal(prefixo + "_motivo", "");
+                return;
             }
-            const partes = horaString.toString().split(":");
-            if (partes.length >= 2) return `${partes[0].padStart(2, '0')}:${partes[1].padStart(2, '0')}`;
-            return horaString;
+            document.querySelectorAll("#areaSubMotivos" + capitalizar(prefixo) + " .btn-motivo")
+                .forEach((el) => el.classList.remove("selecionado"));
+            btn.classList.add("selecionado");
+            setVal(prefixo + "_motivo", titulo);
+            if (prefixo === "op") $("alerta_motivo").style.display = "none";
         }
 
-        function carregarDadosAdmin() {
-            const tb = document.getElementById("tabelaCorpo"); tb.innerHTML = '<tr><td colspan="12" style="text-align:center;">Carregando...</td></tr>';
-            fetch(URL_API).then(r=>r.json()).then(res => { if(res.status==="sucesso") { dadosGlobais = res.dados; aplicarFiltros(); } });
+        /** Limpa toda a seleção de categoria/motivo de um formulário (operador ou admin). */
+        function resetarMotivos(prefixo) {
+            document.querySelectorAll("#areaCategorias" + capitalizar(prefixo) + " .btn-categoria")
+                .forEach((el) => el.classList.remove("selecionado"));
+            $("areaSubMotivos" + capitalizar(prefixo) + "Wrapper").style.display = "none";
+            setVal(prefixo + "_motivo", "");
+            if (prefixo === "md") $("aviso_motivo_antigo_md").style.display = "none";
         }
-        
-        function aplicarFiltros() {
-            const t = document.getElementById("f_turno").value, l = document.getElementById("f_linha").value;
-            const fil = dadosGlobais.filter(r => (t==="" || r.Turno===t) && (l==="" || r.Linha===l));
-            const tb = document.getElementById("tabelaCorpo"); tb.innerHTML = ""; let tMin=0, tQtd=0;
-            if(fil.length===0) tb.innerHTML = '<tr><td colspan="12" style="text-align:center;">Sem registros.</td></tr>';
-            else fil.forEach(r => {
-                tMin += Number(r.Duracao_Min)||0; tQtd += Number(r.Qtd_Parada)||0; const tr = document.createElement("tr"); tr.ondblclick = () => abrirModal(r);
-                const dataLimpa = formatarData(r.Data); const horaIniLimpa = formatarHoraLimpa(r.Horario); const horaFimLimpa = formatarHoraLimpa(r.Hora_Fim);
-                tr.innerHTML = `<td>${r.ID||'-'}</td><td>${r.Responsavel||'-'}</td><td>${dataLimpa}</td><td>${r.Turno||'-'}</td><td>${r.Linha||'-'}</td><td>${r.Maquina||'-'}</td><td>${r.Produto||'-'}</td><td>${horaIniLimpa}</td><td>${horaFimLimpa}</td><td>${r.Duracao_Min||'0'}</td><td>${r.Qtd_Parada||'0'}</td><td>${r.Motivo||'-'}</td>`;
-                tb.appendChild(tr);
-            });
-            document.getElementById("lblRegistros").innerText = `Registros: ${fil.length}`; document.getElementById("lblQtd").innerText = `Qtd: ${tQtd}`; document.getElementById("lblMinutos").innerText = `Minutos: ${tMin}`;
-        }
-        
-        function limparFiltros() { document.getElementById("f_turno").value=""; document.getElementById("f_linha").value=""; aplicarFiltros(); }
-        function exportarExcel() { let csv = []; document.querySelectorAll("table tr").forEach(row => { let r = []; row.querySelectorAll("td, th").forEach(c => r.push('"'+c.innerText+'"')); csv.push(r.join(";")); }); let a = document.createElement("a"); a.href = window.URL.createObjectURL(new Blob(["\uFEFF"+csv.join("\n")], {type: "text/csv;charset=utf-8;"})); a.download = "Paradas.csv"; a.click(); }
-        function sincronizarPowerBI() { alert("Sincronização Cloud Ativa!\n\nO Power BI lê direto do Sheets!"); }
 
-        function fecharModal() { document.getElementById("modalAdmin").classList.remove("ativa"); }
-        function abrirModal(d) {
-            const modal = document.getElementById("modalAdmin"), botoes = document.getElementById("modalBotoes"); modal.classList.add("ativa"); botoes.innerHTML = "";
-            if(!d) {
-                ['md_id','md_resp','md_prod','md_ini','md_fim','md_motivo'].forEach(id=>document.getElementById(id).value=""); document.getElementById("md_qtd").value="1"; document.getElementById("md_data").value = new Date().toISOString().split('T')[0];
-                botoes.innerHTML = `<button class="btn-verde" id="mdBtnSalvar" onclick="acaoModal('insert')">Salvar Novo</button><button class="btn-cinza" onclick="fecharModal()">Cancelar</button>`;
+        /**
+         * Usado ao abrir o modal do Admin para EDITAR um registro existente:
+         * acha a categoria do motivo salvo e "clica" nos botões certos automaticamente.
+         */
+        function preSelecionarMotivo(prefixo, motivoSalvo) {
+            resetarMotivos(prefixo);
+            if (!motivoSalvo) return;
+
+            for (const motivos of Object.values(MAPA_MOTIVOS)) {
+                const encontrado = motivos.find((m) => m.titulo === motivoSalvo);
+                if (encontrado) {
+                    mostrarSubMotivos(motivos, prefixo);
+                    const btnMotivo = [...document.querySelectorAll("#areaSubMotivos" + capitalizar(prefixo) + " .btn-motivo")]
+                        .find((b) => b.querySelector("strong").textContent === motivoSalvo);
+                    if (btnMotivo) btnMotivo.click();
+                    return;
+                }
+            }
+
+            // Motivo salvo não existe mais no mapa atual (categoria removida/renomeada):
+            // mantém o valor original e avisa o admin, em vez de perder o dado.
+            setVal(prefixo + "_motivo", motivoSalvo);
+            $("aviso_motivo_antigo_md").style.display = "block";
+        }
+
+        // =============================================================================
+        // INICIALIZAÇÃO
+        // =============================================================================
+        document.addEventListener("DOMContentLoaded", () => {
+            iniciarMotivos("op");
+            iniciarMotivos("md");
+            setVal("op_data", new Date().toISOString().split("T")[0]);
+            setVal("md_data", new Date().toISOString().split("T")[0]);
+            attMaq("op");
+            attMaq("md");
+            ["op_ini", "op_fim", "md_ini", "md_fim"].forEach(mascararHora);
+            carregarProdutos();
+        });
+
+        function carregarProdutos() {
+            apiGet("?aba=produtos")
+                .then((lista) => {
+                    produtos = Array.isArray(lista) ? lista : [];
+                    $("op_prod").placeholder = produtos.length ? "Selecione o produto..." : "Nenhum produto cadastrado";
+                    configurarAutocomplete("op_prod");
+                    configurarAutocomplete("md_prod");
+                })
+                .catch(() => { $("op_prod").placeholder = "Erro ao carregar produtos"; });
+        }
+
+        // =============================================================================
+        // NAVEGAÇÃO / LOGIN
+        // =============================================================================
+        function mudarTela(id, titulo) {
+            document.querySelectorAll(".container").forEach((e) => e.classList.remove("ativa"));
+            $(id).classList.add("ativa");
+            $("titulo-header").innerText = titulo;
+            $("btnSair").style.display = id === "tela-login" ? "none" : "block";
+        }
+
+        function fazerLogin() {
+            const usuario = val("loginUser").toLowerCase();
+            const senha = val("loginSenha");
+            const conta = CREDENCIAIS[usuario];
+
+            if (conta && conta.senha === senha) {
+                mudarTela(conta.tela, conta.titulo);
+                if (usuario === "operador") $("op_resp").focus();
+                else carregarDadosAdmin();
             } else {
-                const dataLimpa = formatarData(d.Data); const horaIniLimpa = formatarHoraLimpa(d.Horario); const horaFimLimpa = formatarHoraLimpa(d.Hora_Fim);
-                document.getElementById("md_id").value = d.ID; document.getElementById("md_resp").value = d.Responsavel; 
-                if (dataLimpa && dataLimpa.includes('/')) document.getElementById("md_data").value = dataLimpa.split("/").reverse().join("-");
-                document.getElementById("md_turno").value = d.Turno; document.getElementById("md_linha").value = d.Linha; attMaq('md');
-                document.getElementById("md_maq").value = d.Maquina; document.getElementById("md_prod").value = d.Produto;
-                document.getElementById("md_ini").value = horaIniLimpa; document.getElementById("md_fim").value = horaFimLimpa;
-                document.getElementById("md_qtd").value = d.Qtd_Parada; 
-                
-                const sel = document.getElementById("md_motivo");
-                let existe = Array.from(sel.options).some(opt => opt.value === d.Motivo);
-                if(!existe) sel.options.add(new Option(d.Motivo + " (Antigo)", d.Motivo));
-                sel.value = d.Motivo;
-
-                botoes.innerHTML = `<button class="btn-amarelo" id="mdBtnAtt" onclick="acaoModal('update')">Atualizar</button><button class="btn-vermelho" id="mdBtnDel" onclick="acaoModal('delete')">Excluir</button><button class="btn-cinza" onclick="fecharModal()">Cancelar</button>`;
+                alert("Credenciais inválidas!");
             }
-        }
-        function acaoModal(action) {
-            if(action==="delete" && !confirm("Excluir?")) return;
-            const d = formatarPayload("md"); d.id = document.getElementById("md_id").value;
-            if(action!=="delete" && (d.hora_inicio.length<5 || d.hora_fim.length<5)) return alert("Preencha as horas!");
-            const idBotao = action==='insert' ? 'mdBtnSalvar' : (action==='update' ? 'mdBtnAtt' : 'mdBtnDel');
-            enviarAPI(d, idBotao, action, () => { fecharModal(); carregarDadosAdmin(); });
+            limparCampos(["loginUser", "loginSenha"]);
         }
 
-        // --- FUNÇÕES ADMIN PRODUTOS ---
-        function abrirAdminProdutos() {
-            document.getElementById("modalProdutos").classList.add("ativa");
-            renderizarListaAdminProd();
+        function logout() { mudarTela("tela-login", "🏭 Lançamento de Paradas"); }
+
+        function alternarTema() {
+            const escuro = document.body.hasAttribute("data-tema");
+            escuro ? document.body.removeAttribute("data-tema") : document.body.setAttribute("data-tema", "escuro");
+            $("btnTema").innerText = escuro ? "🌙" : "☀️";
         }
-        function fecharAdminProdutos() { document.getElementById("modalProdutos").classList.remove("ativa"); }
-        
-        function renderizarListaAdminProd() {
-            const container = document.getElementById("listaAdminProd"); container.innerHTML = "";
-            if (listaProdutos.length === 0) { container.innerHTML = "<div style='padding:10px;'>Nenhum produto.</div>"; return; }
+
+        // =============================================================================
+        // MÁQUINA / LINHA / HORA
+        // =============================================================================
+        const MAQUINAS_POR_LINHA = {
+            "Linha 1": ["Máquina 1", "Máquina 2"],
+            "Linha 2": ["Máquina 1", "Máquina 2"],
+            "Linha 3": ["Máquina 1"],
+        };
+
+        function attMaq(prefixo) {
+            const linha = val(prefixo + "_linha");
+            const select = $(prefixo + "_maq");
+            const opcoes = MAQUINAS_POR_LINHA[linha] || ["-"];
+            select.innerHTML = "";
+            opcoes.forEach((m) => select.options.add(new Option(m)));
+        }
+
+        function mascararHora(id) {
+            $(id).addEventListener("input", (e) => {
+                let v = e.target.value.replace(/\D/g, "").slice(0, 4);
+                if (v.length >= 3) v = v.slice(0, 2) + ":" + v.slice(2);
+                e.target.value = v;
+            });
+            $(id).addEventListener("blur", (e) => {
+                if (e.target.value && !horaValida(e.target.value)) {
+                    alert("Hora inválida: " + e.target.value);
+                    e.target.value = "";
+                }
+            });
+        }
+
+        function horaValida(hhmm) {
+            const m = /^(\d{2}):(\d{2})$/.exec(hhmm);
+            if (!m) return false;
+            const [, h, min] = m;
+            return Number(h) < 24 && Number(min) < 60;
+        }
+
+        function calcMinutos(inicio, fim) {
+            if (!horaValida(inicio) || !horaValida(fim)) return 0;
+            const [h1, m1] = inicio.split(":").map(Number);
+            const [h2, m2] = fim.split(":").map(Number);
+            const minutos = (h2 * 60 + m2) - (h1 * 60 + m1);
+            return minutos < 0 ? minutos + 1440 : minutos;
+        }
+
+        // =============================================================================
+        // AUTOCOMPLETE DE PRODUTOS
+        // =============================================================================
+        function configurarAutocomplete(inputId) {
+            const input = $(inputId);
+            const lista = $("list-" + inputId);
+
+            const render = (filtro) => {
+                lista.innerHTML = "";
+                const filtroUpper = (filtro || "").toUpperCase();
+                produtos
+                    .filter((p) => !filtro || `${p.codigo} ${p.nome}`.toUpperCase().includes(filtroUpper))
+                    .forEach((p) => {
+                        const texto = `${p.codigo} | ${p.nome}`;
+                        const item = criarElemento("div", {
+                            text: texto,
+                            onclick() { input.value = texto; lista.innerHTML = ""; },
+                        });
+                        lista.appendChild(item);
+                    });
+            };
+
+            input.addEventListener("input", (e) => render(e.target.value));
+            input.addEventListener("click", (e) => render(e.target.value));
+            document.addEventListener("click", (e) => { if (e.target !== input) lista.innerHTML = ""; });
+        }
+
+        // =============================================================================
+        // FORMATAÇÃO
+        // =============================================================================
+        function formatarData(dataString) {
+            if (!dataString) return "-";
+            if (/^\d{2}\/\d{2}\/\d{4}$/.test(dataString)) return dataString;
+            const d = new Date(dataString);
+            if (isNaN(d)) return dataString;
+            return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+        }
+
+        function formatarHora(horaString) {
+            if (!horaString) return "-";
+            const s = horaString.toString();
+            if (s.includes("T")) {
+                const d = new Date(s);
+                if (!isNaN(d)) return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
+            }
+            const partes = s.split(":");
+            return partes.length >= 2 ? `${partes[0].padStart(2, "0")}:${partes[1].padStart(2, "0")}` : s;
+        }
+
+        // =============================================================================
+        // PAYLOAD DO FORMULÁRIO (usado por operador e admin)
+        // =============================================================================
+        const TURNO_EN = { "Manhã": "Morning", "Tarde": "Afternoon", "Noite": "Night" };
+
+        function montarPayload(prefixo) {
+            const turno = val(prefixo + "_turno");
+            const linha = val(prefixo + "_linha");
+            const maquina = val(prefixo + "_maq");
+            const inicio = val(prefixo + "_ini");
+            const fim = val(prefixo + "_fim");
+
+            return {
+                responsavel: val(prefixo + "_resp"),
+                data_registro: val(prefixo + "_data").split("-").reverse().join("/"),
+                turno,
+                linha,
+                maquina,
+                produto: val(prefixo + "_prod") || "NÃO INFORMADO",
+                hora_inicio: inicio,
+                hora_fim: fim,
+                minutos: calcMinutos(inicio, fim),
+                qtd: val(prefixo + "_qtd"),
+                motivo: val(prefixo + "_motivo"),
+                turno_en: TURNO_EN[turno] || turno,
+                linha_en: linha.replace("Linha", "Line"),
+                maquina_en: maquina.replace("Máquina", "Machine"),
+            };
+        }
+
+        function horasPreenchidas(payload) {
+            return horaValida(payload.hora_inicio) && horaValida(payload.hora_fim);
+        }
+
+        // =============================================================================
+        // TELA OPERADOR
+        // =============================================================================
+        function salvarOperador(evento) {
+            evento.preventDefault();
+
+            if (!val("op_motivo")) {
+                $("alerta_motivo").style.display = "block";
+                return;
+            }
+
+            const payload = montarPayload("op");
+            if (!horasPreenchidas(payload)) return alert("Hora inválida!");
+
+            executarAcao({ action: "insert", ...payload }, "btnSalvarOp", () => {
+                alert("Salvo!");
+                limparCampos(["op_ini", "op_fim", "op_prod"]);
+                setVal("op_qtd", "1");
+                resetarMotivos("op");
+                $("op_resp").focus();
+            });
+        }
+
+        // =============================================================================
+        // TELA ADMIN — TABELA
+        // =============================================================================
+        function carregarDadosAdmin() {
+            $("tabelaCorpo").innerHTML = '<tr><td colspan="12" style="text-align:center;">Carregando...</td></tr>';
+            apiGet()
+                .then((res) => {
+                    if (res.status !== "sucesso") throw new Error(res.mensagem);
+                    registros = res.dados;
+                    aplicarFiltros();
+                })
+                .catch((err) => {
+                    $("tabelaCorpo").innerHTML = `<tr><td colspan="12" style="text-align:center;">Erro: ${err.message}</td></tr>`;
+                });
+        }
+
+        function aplicarFiltros() {
+            const turno = val("f_turno");
+            const linha = val("f_linha");
+            const filtrados = registros.filter((r) => (!turno || r.Turno === turno) && (!linha || r.Linha === linha));
+
+            const corpo = $("tabelaCorpo");
+            corpo.innerHTML = "";
+
+            if (filtrados.length === 0) {
+                corpo.innerHTML = '<tr><td colspan="12" style="text-align:center;">Sem registros.</td></tr>';
+            } else {
+                let totalMin = 0, totalQtd = 0;
+                filtrados.forEach((r) => {
+                    totalMin += Number(r.Duracao_Min) || 0;
+                    totalQtd += Number(r.Qtd_Parada) || 0;
+                    corpo.appendChild(criarLinhaTabela(r));
+                });
+                $("lblQtd").innerText = `Qtd: ${totalQtd}`;
+                $("lblMinutos").innerText = `Minutos: ${totalMin}`;
+            }
+            $("lblRegistros").innerText = `Registros: ${filtrados.length}`;
+        }
+
+        function criarLinhaTabela(r) {
+            const colunas = [
+                r.ID, r.Responsavel, formatarData(r.Data), r.Turno, r.Linha, r.Maquina,
+                r.Produto, formatarHora(r.Horario), formatarHora(r.Hora_Fim), r.Duracao_Min, r.Qtd_Parada, r.Motivo,
+            ];
+            const tr = document.createElement("tr");
+            tr.addEventListener("dblclick", () => abrirModal(r));
+            colunas.forEach((valor) => {
+                const td = document.createElement("td");
+                td.textContent = (valor === undefined || valor === null || valor === "") ? "-" : valor; // texto puro: sem risco de XSS
+                tr.appendChild(td);
+            });
+            return tr;
+        }
+
+        function limparFiltros() {
+            setVal("f_turno", "");
+            setVal("f_linha", "");
+            aplicarFiltros();
+        }
+
+        function exportarExcel() {
+            const linhas = [];
+            document.querySelectorAll("table tr").forEach((row) => {
+                const celulas = [...row.querySelectorAll("td, th")].map((c) => `"${c.innerText.replace(/"/g, '""')}"`);
+                linhas.push(celulas.join(";"));
+            });
+            const blob = new Blob(["\uFEFF" + linhas.join("\n")], { type: "text/csv;charset=utf-8;" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "Paradas.csv";
+            a.click();
+        }
+
+        function sincronizarPowerBI() {
+            alert("Sincronização Cloud Ativa!\n\nO Power BI lê direto do Sheets!");
+        }
+
+        // =============================================================================
+        // MODAL DE REGISTRO (Admin)
+        // =============================================================================
+        function fecharModal() { $("modalAdmin").classList.remove("ativa"); }
+
+        function abrirModal(registro) {
+            $("modalAdmin").classList.add("ativa");
+            const botoes = $("modalBotoes");
+            botoes.innerHTML = "";
+
+            if (!registro) {
+                limparCampos(["md_id", "md_resp", "md_prod", "md_ini", "md_fim"]);
+                resetarMotivos("md");
+                setVal("md_qtd", "1");
+                setVal("md_data", new Date().toISOString().split("T")[0]);
+                botoes.appendChild(criarElemento("button", { class: "btn-verde", id: "mdBtnSalvar", text: "Salvar Novo", onclick: () => acaoModal("insert") }));
+                botoes.appendChild(criarElemento("button", { class: "btn-cinza", text: "Cancelar", onclick: fecharModal }));
+                return;
+            }
+
+            setVal("md_id", registro.ID);
+            setVal("md_resp", registro.Responsavel);
+            const dataLimpa = formatarData(registro.Data);
+            if (dataLimpa.includes("/")) setVal("md_data", dataLimpa.split("/").reverse().join("-"));
+            setVal("md_turno", registro.Turno);
+            setVal("md_linha", registro.Linha);
+            attMaq("md");
+            setVal("md_maq", registro.Maquina);
+            setVal("md_prod", registro.Produto);
+            setVal("md_ini", formatarHora(registro.Horario));
+            setVal("md_fim", formatarHora(registro.Hora_Fim));
+            setVal("md_qtd", registro.Qtd_Parada);
+
+            preSelecionarMotivo("md", registro.Motivo);
+
+            botoes.appendChild(criarElemento("button", { class: "btn-amarelo", id: "mdBtnAtt", text: "Atualizar", onclick: () => acaoModal("update") }));
+            botoes.appendChild(criarElemento("button", { class: "btn-vermelho", id: "mdBtnDel", text: "Excluir", onclick: () => acaoModal("delete") }));
+            botoes.appendChild(criarElemento("button", { class: "btn-cinza", text: "Cancelar", onclick: fecharModal }));
+        }
+
+        function acaoModal(action) {
+            if (action === "delete") {
+                if (!confirm("Excluir?")) return;
+                executarAcao({ action, id: val("md_id") }, "mdBtnDel", () => { fecharModal(); carregarDadosAdmin(); });
+                return;
+            }
+
+            if (!val("md_motivo")) return alert("Selecione um motivo!");
+
+            const payload = montarPayload("md");
+            payload.id = val("md_id");
+            if (!horasPreenchidas(payload)) return alert("Preencha as horas corretamente!");
+
+            const btnId = action === "insert" ? "mdBtnSalvar" : "mdBtnAtt";
             
-            listaProdutos.forEach(p => {
-                const div = document.createElement("div"); div.className = "item-produto";
-                div.innerHTML = `<span>${p}</span> <button class="btn-vermelho" onclick="deletarProduto('${p}')">Excluir</button>`;
-                container.appendChild(div);
+            executarAcao({ action, ...payload }, btnId, () => { 
+                // Atualiza a tabela lá no fundo para você ver o dado entrando
+                carregarDadosAdmin(); 
+                
+                if (action === "insert") {
+                    // Mantém a tela aberta e limpa apenas as horas e os motivos
+                    alert("Salvo com sucesso! A tela continuará aberta para o próximo lançamento.");
+                    limparCampos(["md_ini", "md_fim", "md_prod"]);
+                    setVal("md_qtd", "1");
+                    resetarMotivos("md");
+                    $("md_ini").focus(); // Joga o cursor de volta para a Hora de Início
+                } else {
+                    // Se for apenas uma Edição (update), ele fecha o modal normalmente
+                    fecharModal(); 
+                }
+            });
+        }
+
+        // =============================================================================
+        // ADMIN DE PRODUTOS
+        // =============================================================================
+        function abrirAdminProdutos() {
+            $("modalProdutos").classList.add("ativa");
+            renderizarListaProdutos();
+        }
+
+        function fecharAdminProdutos() { $("modalProdutos").classList.remove("ativa"); }
+
+        function renderizarListaProdutos() {
+            const container = $("listaAdminProd");
+            container.innerHTML = "";
+
+            if (produtos.length === 0) {
+                container.appendChild(criarElemento("div", { style: "padding:10px;", text: "Nenhum produto." }));
+                return;
+            }
+
+            produtos.forEach((p) => {
+                const item = criarElemento("div", { class: "item-produto" }, [
+                    criarElemento("span", { text: `${p.codigo} | ${p.nome}` }),
+                    criarElemento("button", {
+                        class: "btn-vermelho",
+                        text: "Excluir",
+                        onclick: () => deletarProduto(p),
+                    }),
+                ]);
+                container.appendChild(item);
             });
         }
 
         function adicionarProduto() {
-            const cod = document.getElementById("novoProdCod").value;
-            const nome = document.getElementById("novoProdNome").value.toUpperCase();
-            if(!cod || !nome) return alert("Preencha código e nome!");
-            
-            const novo = cod + " | " + nome;
-            listaProdutos.push(novo); 
-            renderizarListaAdminProd();
-            document.getElementById("novoProdCod").value = ""; document.getElementById("novoProdNome").value = "";
-            
-            enviarAPI({ codigo: cod, nome: nome }, "btnSalvarProd", "insert_prod", () => {});
+            const codigo = val("novoProdCod").trim();
+            const nome = val("novoProdNome").trim().toUpperCase();
+            if (!codigo || !nome) return alert("Preencha código e nome!");
+
+            executarAcao({ action: "insert_prod", codigo, nome }, "btnSalvarProd", () => {
+                produtos.push({ codigo, nome });
+                renderizarListaProdutos();
+                limparCampos(["novoProdCod", "novoProdNome"]);
+            });
         }
 
-        function deletarProduto(strItem) {
-            if(!confirm(`Excluir o produto: ${strItem}?`)) return;
-            const partes = strItem.split(" | ");
-            listaProdutos = listaProdutos.filter(p => p !== strItem);
-            renderizarListaAdminProd();
-            
-            fetch(URL_API, { method: "POST", mode: "no-cors", headers: {"Content-Type": "application/json"}, 
-                body: JSON.stringify({ action: "delete_prod", codigo: partes[0], nome: partes[1] }) 
-            });
+        function deletarProduto(produto) {
+            if (!confirm(`Excluir o produto: ${produto.codigo} | ${produto.nome}?`)) return;
+
+            apiPost({ action: "delete_prod", codigo: produto.codigo, nome: produto.nome })
+                .then((res) => {
+                    if (res.status !== "sucesso") throw new Error(res.mensagem || "Erro ao excluir.");
+                    produtos = produtos.filter((p) => p.codigo !== produto.codigo);
+                    renderizarListaProdutos();
+                })
+                .catch((err) => alert("Erro: " + err.message));
         }
     </script>
 </body>
