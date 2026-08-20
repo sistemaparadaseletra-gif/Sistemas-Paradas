@@ -97,6 +97,20 @@
             margin-bottom: 5px;
             display: inline-block;
         }
+/* --- ADAPTAÇÃO PARA TELAS PEQUENAS (CELULAR) --- */
+        @media (max-width: 768px) {
+    /* Procura qualquer div que esteja tentando dividir o espaço e força a empilhar */
+            div[style*="display: flex"], div[style*="display: grid"], .row, .grid, .linha {
+                display: flex !important;
+                flex-direction: column !important;
+                width: 100% !important;
+            }
+    
+    /* Garante que a margem entre os campos empilhados fique boa */
+            div {
+                margin-bottom: 5px;
+            }
+        }
     </style>
 </head>
 <body>
